@@ -100,7 +100,7 @@ export function splitInstallments(total: number, count: number) {
 }
 
 export function addMonths(iso: string, months: number) {
-  const [y, m, d] = iso.split("-").map(Number);
+  const [y = 1970, m = 1, d = 1] = iso.split("-").map(Number);
   const target = new Date(Date.UTC(y, m - 1 + months, 1));
   const last = new Date(Date.UTC(target.getUTCFullYear(), target.getUTCMonth() + 1, 0)).getUTCDate();
   target.setUTCDate(Math.min(d, last));
