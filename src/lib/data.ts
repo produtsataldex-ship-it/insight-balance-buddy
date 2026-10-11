@@ -160,7 +160,7 @@ export function useSaveCategory() {
   return useMutation({
     mutationFn: async (v: { id?: string; name: string; kind: "income" | "expense"; icon?: string }) => {
       const user_id = await uid();
-      if (v.id) check(await supabase.from("categories").update({ name: v.name, icon: v.icon }).eq("id", v.id));
+      if (v.id) check(await supabase.from("categories").update({ name: v.name, icon: v.icon ?? "tag" }).eq("id", v.id));
       else check(await supabase.from("categories").insert({ name: v.name, kind: v.kind, icon: v.icon ?? "tag", user_id }));
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["categories"] }),
