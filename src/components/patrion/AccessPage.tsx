@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { isValidAccessCode, normalizeAccessCode, safeDestination } from '@/lib/access';
 
-export function AccessPage({ redirect }: {redirect?:string}) {
+export function AccessPage({ redirect }: {redirect?:string | undefined}) {
  const navigate = useNavigate();
  const [activation,setActivation] = useState(false);
  const [email,setEmail] = useState(''); const [password,setPassword] = useState(''); const [name,setName] = useState(''); const [code,setCode] = useState('');

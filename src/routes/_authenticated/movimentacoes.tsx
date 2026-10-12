@@ -1,16 +1,15 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { AppShell, PageHeader } from "@/components/patrion/AppShell";
-
-export const Route = createFileRoute("/_authenticated/movimentacoes")({
-  head: () => ({ meta: [{ title: "Movimentações — Patrion" }, { name: "description", content: "Movimentações no Patrion." }] }),
-  component: Page,
-});
-
-function Page() {
-  return (
-    <AppShell>
-      <PageHeader title="Movimentações" />
-      <div className="surface p-6 text-sm text-muted-foreground">Esta área ainda está em construção.</div>
-    </AppShell>
-  );
+import { createFileRoute } from '@tanstack/react-router';
+import { useState } from 'react';
+import { Plus } from 'lucide-react';
+import { AppShell,PageHeader } from '@/components/patrion/AppShell';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { TransactionEditor } from '@/components/patrion/TransactionEditor';
+import { TransactionList } from '@/components/patrion/TransactionList';
+import { useTransactions,useCategories,useProfile,type Transaction } from '@/lib/data';
+import { monthPeriod } from '@/lib/finance';
+import { pageMeta } from '@/lib/meta';
+export const Route=createFileRoute('/_authenticated/movimentacoes')({head:()=>pageMeta('Movimentações','Registre, edite e filtre receitas, despesas, parcelas e pagamentos do Patrion.'),component:TransactionsPage});
+function TransactionsPage(){const txs=useTransactions();const categories=useCategories();const profile=useProfile();const period=monthPeriod();const [start,setStart]=useState(period.start);const [end,setEnd]=useState(period.end);const [type,setType]=useState('all');const [status,setStatus]=useState('all');const [cat,setCat]=useState('');const [search,setSearch]=useState('');const [editing,setEditing]=useState<Transaction|undefined>();const [open,setOpen]=useState(false);const rows=(txs.data??[]).filter(t=>(!start||t.occurred_on>=start)&&(!end||t.occurred_on<=end)&&(type==='all'||t.type===type)&&(status==='all'||t.status===status)&&(!cat||t.category_id===cat)&&t.description.toLowerCase().includes(search.toLowerCase()));const select='h-11 min-w-0 rounded-xl border border-input bg-card px-3 text-sm';
+return <AppShell><PageHeader title="Movimentações" action={<Button size="icon" title="Nova movimentação" aria-label="Nova movimentação" onClick={()=>{setEditing(undefined);setOpen(true);}}><Plus/></Button>}/><div className="mb-6 space-y-3"><Input placeholder="Buscar movimentações" aria-label="Buscar movimentações" value={search} onChange={e=>setSearch(e.target.value)}/><div className="grid grid-cols-2 gap-3"><label className="text-xs text-muted-foreground">De<Input type="date" className="mt-1" aria-label="Data inicial" value={start} onChange={e=>setStart(e.target.value)}/></label><label className="text-xs text-muted-foreground">Até<Input type="date" className="mt-1" aria-label="Data final" value={end} onChange={e=>setEnd(e.target.value)}/></label></div><div className="grid grid-cols-2 gap-3"><select aria-label="Tipo" className={select} value={type} onChange={e=>setType(e.target.value)}><option value="all">Todos os tipos</option><option value="income">Receitas</option><option value="expense">Despesas</option><option value="transfer">Transferências</option></select><select aria-label="Situação" className={select} value={status} onChange={e=>setStatus(e.target.value)}><option value="all">Todas as situações</option><option value="paid">Pagas</option><option value="pending">Pendentes</option></select><select aria-label="Categoria" className={select+' col-span-2'} value={cat} onChange={e=>setCat(e.target.value)}><option value="">Todas as categorias</option>{categories.data?.map(c=><option key={c.id} value={c.id}>{c.name}</option>)}</select></div></div><p className="mb-2 text-xs text-muted-foreground">{rows.length} movimentações</p>{txs.isPending?<p>Carregando…</p>:txs.error?<p role="alert" className="text-destructive">Não foi possível carregar as movimentações.</p>:<TransactionList rows={rows} hide={profile.data?.hide_values??false} onEdit={t=>{setEditing(t);setOpen(true);}}/>}{open&&<TransactionEditor transaction={editing} onClose={()=>setOpen(false)}/>}</AppShell>;
 }
