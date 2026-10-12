@@ -74,8 +74,10 @@ export function AppShell({ children, wide = false }: { children: ReactNode; wide
               <Link
                 key={t.to}
                 to={t.to}
+                 aria-label={t.label}
+                 title={t.label}
                 aria-current={active ? "page" : undefined}
-                className="pressable relative flex flex-col items-center gap-1 pt-2.5 pb-2 text-[11px]"
+                 className="pressable relative flex h-16 flex-col items-center justify-center"
               >
                 <span
                   className={cn(
@@ -87,7 +89,6 @@ export function AppShell({ children, wide = false }: { children: ReactNode; wide
                   className={cn("size-6 transition-all duration-300", active ? "scale-110 text-primary" : "text-muted-foreground")}
                   strokeWidth={active ? 2.2 : 1.7}
                 />
-                <span className={active ? "text-primary" : "text-muted-foreground"}>{t.label}</span>
               </Link>
             );
           })}

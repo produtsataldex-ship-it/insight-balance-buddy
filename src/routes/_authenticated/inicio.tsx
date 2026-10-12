@@ -1,16 +1,24 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { AppShell, PageHeader } from "@/components/patrion/AppShell";
-
-export const Route = createFileRoute("/_authenticated/inicio")({
-  head: () => ({ meta: [{ title: "Início — Patrion" }, { name: "description", content: "Início no Patrion." }] }),
-  component: Page,
-});
-
-function Page() {
-  return (
-    <AppShell>
-      <PageHeader title="Início" />
-      <div className="surface p-6 text-sm text-muted-foreground">Esta área ainda está em construção.</div>
-    </AppShell>
-  );
+import { createFileRoute, Link } from '@tanstack/react-router';
+import { useState } from 'react';
+import { Plus, Eye, EyeOff, ChevronLeft, ChevronRight, ArrowUpRight, ArrowDownLeft, MessageCircle } from 'lucide-react';
+import { AppShell, PageHeader } from '@/components/patrion/AppShell';
+import { Button } from '@/components/ui/button';
+import { TransactionEditor } from '@/components/patrion/TransactionEditor';
+import { TransactionList } from '@/components/patrion/TransactionList';
+import { useProfile,useTransactions,useUpdateProfile,useCategories } from '@/lib/data';
+import { periodTotals,availableBalance,forecastBalance,monthPeriod,todayISO,expensesByCategory,type TxLike } from '@/lib/finance';
+import { formatBRL,greeting } from '@/lib/format';
+import { pageMeta } from '@/lib/meta';
+export const Route=createFileRoute('/_authenticated/inicio')({head:()=>pageMeta('Início','Acompanhe saldo, receitas, despesas e compromissos reais no Patrion.'),component:HomePage});
+function HomePage(){
+ const profile=useProfile();const txs=useTransactions();const categories=useCategories();const update=useUpdateProfile();const [offset,setOffset]=useState(0);const [adding,setAdding]=useState(false);const period=monthPeriod(offset);const today=todayISO();const rows=txs.data??[];const valid:TxLike[]=rows.map(t=>({...t,type:t.type==='income'?'income':t.type==='transfer'?'transfer':'expense',status:t.status==='paid'?'paid':'pending'}));const totals=periodTotals(valid,period);const hide=profile.data?.hide_values??false;const expenseGroups=expensesByCategory(valid,period);
+ return <AppShell><PageHeader title={profile.data?.display_name?.split(' ')[0]||'Seu resumo'} subtitle={greeting()} action={<Button size="icon" variant="ghost" title={hide?'Mostrar valores':'Ocultar valores'} aria-label={hide?'Mostrar valores':'Ocultar valores'} onClick={()=>update.mutate({hide_values:!hide})}>{hide?<EyeOff/>:<Eye/>}</Button>}/>
+ <div className="mb-6 flex items-center justify-between border-b border-border pb-4"><Button variant="ghost" size="icon" aria-label="Mês anterior" onClick={()=>setOffset(offset-1)}><ChevronLeft/></Button><p className="text-sm capitalize">{new Date(period.start+'T12:00:00').toLocaleDateString('pt-BR',{month:'long',year:'numeric'})}</p><Button variant="ghost" size="icon" aria-label="Próximo mês" onClick={()=>setOffset(offset+1)}><ChevronRight/></Button></div>
+ {txs.isPending?<p className="py-8 text-muted-foreground">Carregando suas finanças…</p>:txs.error?<p role="alert" className="py-8 text-destructive">Não foi possível carregar suas finanças.</p>:<>
+ <section className="mb-8 border-b border-border pb-8"><p className="text-sm text-muted-foreground">Saldo disponível</p><p className="mt-3 break-words text-4xl font-display">{formatBRL(availableBalance(valid,today),hide)}</p><div className="mt-5 flex flex-wrap items-center justify-between gap-3"><div><p className="text-xs text-muted-foreground">Previsão até o fim do período · estimativa</p><p className="mt-1 text-lg text-primary">{formatBRL(forecastBalance(valid,today,period.end),hide)}</p></div><Button variant="gold" onClick={()=>setAdding(true)}><Plus/>Adicionar</Button></div></section>
+ <div className="mb-8 grid grid-cols-2 gap-4"><div className="surface p-5"><ArrowDownLeft className="mb-3 size-5 text-income"/><p className="text-xs text-muted-foreground">Receitas do período</p><p className="mt-2 break-words text-xl">{formatBRL(totals.income,hide)}</p></div><div className="surface p-5"><ArrowUpRight className="mb-3 size-5 text-expense"/><p className="text-xs text-muted-foreground">Despesas do período</p><p className="mt-2 break-words text-xl">{formatBRL(totals.expense,hide)}</p></div></div>
+ <section className="mb-8"><div className="mb-2 flex justify-between items-center"><h2 className="text-xl">Movimentações recentes</h2><Button asChild variant="link" size="sm"><Link to="/movimentacoes">Ver todas</Link></Button></div><TransactionList rows={rows.filter(t=>t.occurred_on>=period.start&&t.occurred_on<=period.end).slice(0,5)} hide={hide}/></section>
+ <section className="mb-8"><h2 className="mb-3 text-xl">Próximos compromissos</h2><TransactionList rows={rows.filter(t=>t.status==='pending').sort((a,b)=>a.occurred_on.localeCompare(b.occurred_on)).slice(0,4)} hide={hide}/></section>
+ {expenseGroups.length>0&&<section className="mb-8"><h2 className="mb-4 text-xl">Despesas por categoria</h2>{expenseGroups.map(g=><div key={g.category_id} className="mb-4"><div className="mb-2 flex justify-between text-sm"><span>{categories.data?.find(c=>c.id===g.category_id)?.name??'Sem categoria'}</span><span>{formatBRL(g.total,hide)}</span></div><progress className="h-1.5 w-full accent-primary" max={totals.expense||1} value={g.total}/></div>)}</section>}
+ </>}<Button asChild variant="outline" className="w-full"><Link to="/assistente"><MessageCircle/>Assistente financeiro</Link></Button>{adding&&<TransactionEditor onClose={()=>setAdding(false)}/>}</AppShell>;
 }

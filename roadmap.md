@@ -1,0 +1,5 @@
+- [ ] Acesso por convite de sete caracteres, sem cadastro público, e administrador indicado.
+- [ ] Painel administrativo para gerar e revogar códigos.
+- [ ] Navegação inferior apenas com ícones e login refinado no tema Patrion.
+- [ ] Completar início, movimentações e conta com dados reais; revisar assistente.
+- [ ] Testar regras de acesso e os fluxos disponíveis.
