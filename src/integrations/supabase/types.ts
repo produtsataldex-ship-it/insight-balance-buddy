@@ -14,6 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
+      access_codes: {
+        Row: {
+          code: string
+          created_at: string
+          created_by: string
+          id: string
+          revoked_at: string | null
+          used_at: string | null
+          used_by: string | null
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          created_by: string
+          id?: string
+          revoked_at?: string | null
+          used_at?: string | null
+          used_by?: string | null
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          created_by?: string
+          id?: string
+          revoked_at?: string | null
+          used_at?: string | null
+          used_by?: string | null
+        }
+        Relationships: []
+      }
       app_settings: {
         Row: {
           key: string
@@ -327,6 +357,24 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      create_access_codes: {
+        Args: { _count?: number }
+        Returns: {
+          code: string
+          created_at: string
+          created_by: string
+          id: string
+          revoked_at: string | null
+          used_at: string | null
+          used_by: string | null
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "access_codes"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       generate_recurring_occurrences: {
         Args: { _until?: string }
         Returns: number
@@ -339,6 +387,7 @@ export type Database = {
         Returns: boolean
       }
       is_active_user: { Args: { _user_id: string }; Returns: boolean }
+      revoke_access_code: { Args: { _id: string }; Returns: undefined }
     }
     Enums: {
       app_role: "admin" | "user"
