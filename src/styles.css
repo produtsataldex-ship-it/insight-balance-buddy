@@ -114,12 +114,12 @@
     background-color: var(--color-background);
     color: var(--color-foreground);
     font-family: var(--font-sans);
-    letter-spacing: -0.2px;
+    letter-spacing: normal;
     -webkit-font-smoothing: antialiased;
   }
   h1, h2, h3, .font-display {
     font-family: var(--font-display);
-    letter-spacing: -1px;
+    letter-spacing: normal;
     font-weight: 600;
   }
   input, textarea, select {
