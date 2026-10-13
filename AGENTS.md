@@ -8,3 +8,7 @@
 > Commits you push to the connected branch sync back to Lovable and show up in
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
+
+- Financial AI runs through authenticated server functions with request-local gateway clients; no prompts or private credentials enter browser code.
+- Assistant proposals are reviewed before saving, and the response ID is the transaction idempotency key so confirmation retries cannot duplicate a launch.
+- Account tools and categories use the existing owner-scoped data hooks to preserve cross-device persistence and isolation.
