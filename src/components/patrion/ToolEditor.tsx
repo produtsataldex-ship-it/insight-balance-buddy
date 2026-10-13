@@ -8,7 +8,7 @@ import { isSafeHttpsUrl } from '@/lib/finance';
 import { Link2, Calculator, FileSpreadsheet, Wallet } from 'lucide-react';
 
 export const TOOL_ICONS = { link: Link2, calculator: Calculator, spreadsheet: FileSpreadsheet, wallet: Wallet };
-export function ToolEditor({ tool, onClose }: { tool?: UserTool; onClose: () => void }) {
+export function ToolEditor({ tool, onClose }: { tool?: UserTool | undefined; onClose: () => void }) {
   const [name, setName] = useState(tool?.name ?? '');
   const [url, setUrl] = useState(tool?.url ?? '');
   const [description, setDescription] = useState(tool?.description ?? '');
