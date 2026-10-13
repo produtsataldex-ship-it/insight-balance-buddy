@@ -158,7 +158,7 @@ export function useDeleteRecurring() {
 export function useSaveCategory() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (v: { id?: string; name: string; kind: "income" | "expense"; icon?: string }) => {
+    mutationFn: async (v: { id?: string | undefined; name: string; kind: "income" | "expense"; icon?: string }) => {
       const user_id = await uid();
       if (v.id) check(await supabase.from("categories").update({ name: v.name, icon: v.icon ?? "tag" }).eq("id", v.id));
       else check(await supabase.from("categories").insert({ name: v.name, kind: v.kind, icon: v.icon ?? "tag", user_id }));
@@ -181,7 +181,7 @@ export function useDeleteCategory() {
 export function useSaveTool() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (v: { id?: string; name: string; description: string; url: string; icon: string; position?: number }) => {
+    mutationFn: async (v: { id?: string | undefined; name: string; description: string; url: string; icon: string; position?: number }) => {
       const user_id = await uid();
       const { id, ...rest } = v;
       if (id) check(await supabase.from("user_tools").update(rest).eq("id", id));
