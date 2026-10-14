@@ -1,6 +1,8 @@
 - [ ] Acesso por convite de sete caracteres, sem cadastro público, e administrador indicado.
 - [ ] Painel administrativo para gerar e revogar códigos.
 - [ ] Navegação inferior apenas com ícones e login refinado no tema Patrion.
-- [ ] Completar início, movimentações e conta com dados reais; implementar assistente.
+- [x] Substituir início por logo, entrada de gastos por voz e gráfico de pizza com dados reais.
+- [x] Remover animação de entrada e espera artificial na troca das quatro abas.
+- [ ] Verificar lançamento por voz e navegação na conta real — bloqueado: não há sessão de teste autorizada; requer login na prévia.
 - [ ] Usar espaçamento normal nas letras em todo o aplicativo.
 - [ ] Testar regras de acesso e os fluxos disponíveis.
