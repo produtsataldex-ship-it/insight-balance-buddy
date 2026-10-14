@@ -1,6 +1,7 @@
 - [ ] Acesso por convite de sete caracteres, sem cadastro público, e administrador indicado.
 - [ ] Painel administrativo para gerar e revogar códigos.
 - [ ] Navegação inferior apenas com ícones e login refinado no tema Patrion.
-- [ ] Completar início, movimentações e conta com dados reais; implementar assistente.
+- [ ] Substituir início por logo, entrada de gastos por voz e gráfico de pizza com dados reais.
+- [ ] Agilizar troca das quatro abas e verificar os fluxos alterados.
 - [ ] Usar espaçamento normal nas letras em todo o aplicativo.
 - [ ] Testar regras de acesso e os fluxos disponíveis.
