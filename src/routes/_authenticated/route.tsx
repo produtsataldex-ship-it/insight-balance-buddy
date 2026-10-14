@@ -7,11 +7,12 @@ import { SplashScreen } from "@/components/patrion/PatrionLogo";
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
   beforeLoad: async ({ location }) => {
-    const { data } = await supabase.auth.getUser();
-    if (!data.user) {
+    // This is a UI gate only; RLS and authenticated server functions enforce access.
+    const { data } = await supabase.auth.getSession();
+    if (!data.session?.user) {
       throw redirect({ to: "/auth", search: { redirect: location.href } });
     }
-    return { user: data.user };
+    return { user: data.session.user };
   },
   pendingComponent: () => <SplashScreen />,
   component: AuthedLayout,
