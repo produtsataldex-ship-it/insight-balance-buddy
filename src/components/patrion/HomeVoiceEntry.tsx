@@ -63,6 +63,11 @@ export function HomeVoiceEntry() {
         </form>
       </DialogContent>
     </Dialog>
-    {confirmation && <AssistantConfirmation {...confirmation} onClose={() => { setConfirmation(undefined); setText(''); }}/ >}
+    {confirmation && (
+      <AssistantConfirmation
+        {...confirmation}
+        onClose={() => { setConfirmation(undefined); setText(''); }}
+      />
+    )}
   </>;
 }
