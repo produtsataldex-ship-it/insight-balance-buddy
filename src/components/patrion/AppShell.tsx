@@ -31,6 +31,7 @@ export function AppShell({ children, wide = false }: { children: ReactNode; wide
               <Link
                 key={t.to}
                 to={t.to}
+                 preload="intent"
                 className={cn(
                   "pressable flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm",
                   active ? "bg-accent text-primary" : "text-muted-foreground hover:bg-muted hover:text-foreground",
@@ -56,8 +57,7 @@ export function AppShell({ children, wide = false }: { children: ReactNode; wide
       </aside>
 
       <main
-        key={path}
-        className={cn("mx-auto w-full px-4 pt-[calc(var(--safe-top)+1.25rem)] pb-[calc(var(--safe-bottom)+6.5rem)] animate-fade-up md:pb-12", wide ? "max-w-6xl" : "max-w-3xl")}
+        className={cn("mx-auto w-full px-4 pt-[calc(var(--safe-top)+1.25rem)] pb-[calc(var(--safe-bottom)+6.5rem)] md:pb-12", wide ? "max-w-6xl" : "max-w-3xl")}
       >
         {children}
       </main>
@@ -74,6 +74,7 @@ export function AppShell({ children, wide = false }: { children: ReactNode; wide
               <Link
                 key={t.to}
                 to={t.to}
+                 preload="intent"
                  aria-label={t.label}
                  title={t.label}
                 aria-current={active ? "page" : undefined}
@@ -81,12 +82,12 @@ export function AppShell({ children, wide = false }: { children: ReactNode; wide
               >
                 <span
                   className={cn(
-                    "absolute top-0 h-0.5 rounded-full bg-primary transition-all duration-300",
+                    "absolute top-0 h-0.5 rounded-full bg-primary",
                     active ? "w-8 opacity-100" : "w-0 opacity-0",
                   )}
                 />
                 <t.icon
-                  className={cn("size-6 transition-all duration-300", active ? "scale-110 text-primary" : "text-muted-foreground")}
+                  className={cn("size-6", active ? "scale-110 text-primary" : "text-muted-foreground")}
                   strokeWidth={active ? 2.2 : 1.7}
                 />
               </Link>
