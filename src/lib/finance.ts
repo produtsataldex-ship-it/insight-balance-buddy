@@ -151,3 +151,19 @@ export function isSafeHttpsUrl(value: string) {
     return false;
   }
 }
+
+/** Paid + pending expenses in the period split into fixed (from a recurring rule) and one-off. */
+export function fixedVsOneOff(txs: (TxLike & { recurring_id?: string | null })[], p: Period) {
+  let fixed = 0, oneOff = 0;
+  for (const t of txs) {
+    if (t.type !== "expense" || !inPeriod(t.occurred_on, p)) continue;
+    if (t.recurring_id) fixed += n(t.amount); else if (t.status === "paid") oneOff += n(t.amount);
+  }
+  return { fixed: round(fixed), oneOff: round(oneOff) };
+}
+
+/** Favicon for a saved https tool link; never fetched for unsafe URLs. */
+export function faviconUrl(url: string) {
+  if (!isSafeHttpsUrl(url)) return null;
+  return `https://www.google.com/s2/favicons?sz=64&domain=${new URL(url).hostname}`;
+}
