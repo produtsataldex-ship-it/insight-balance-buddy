@@ -13,7 +13,6 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
-import { Route as AuthenticatedAssistenteRouteImport } from './routes/_authenticated/assistente'
 import { Route as AuthenticatedContaRouteImport } from './routes/_authenticated/conta'
 import { Route as AuthenticatedInicioRouteImport } from './routes/_authenticated/inicio'
 import { Route as AuthenticatedMovimentacoesRouteImport } from './routes/_authenticated/movimentacoes'
@@ -37,11 +36,6 @@ const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedAssistenteRoute = AuthenticatedAssistenteRouteImport.update({
-  id: '/assistente',
-  path: '/assistente',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
 const AuthenticatedContaRoute = AuthenticatedContaRouteImport.update({
   id: '/conta',
   path: '/conta',
@@ -63,7 +57,6 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/admin': typeof AuthenticatedAdminRoute
-  '/assistente': typeof AuthenticatedAssistenteRoute
   '/conta': typeof AuthenticatedContaRoute
   '/inicio': typeof AuthenticatedInicioRoute
   '/movimentacoes': typeof AuthenticatedMovimentacoesRoute
@@ -72,7 +65,6 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/admin': typeof AuthenticatedAdminRoute
-  '/assistente': typeof AuthenticatedAssistenteRoute
   '/conta': typeof AuthenticatedContaRoute
   '/inicio': typeof AuthenticatedInicioRoute
   '/movimentacoes': typeof AuthenticatedMovimentacoesRoute
@@ -83,37 +75,21 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
-  '/_authenticated/assistente': typeof AuthenticatedAssistenteRoute
   '/_authenticated/conta': typeof AuthenticatedContaRoute
   '/_authenticated/inicio': typeof AuthenticatedInicioRoute
   '/_authenticated/movimentacoes': typeof AuthenticatedMovimentacoesRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths:
-    | '/'
-    | '/auth'
-    | '/admin'
-    | '/assistente'
-    | '/conta'
-    | '/inicio'
-    | '/movimentacoes'
+  fullPaths: '/' | '/auth' | '/admin' | '/conta' | '/inicio' | '/movimentacoes'
   fileRoutesByTo: FileRoutesByTo
-  to:
-    | '/'
-    | '/auth'
-    | '/admin'
-    | '/assistente'
-    | '/conta'
-    | '/inicio'
-    | '/movimentacoes'
+  to: '/' | '/auth' | '/admin' | '/conta' | '/inicio' | '/movimentacoes'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
     | '/auth'
     | '/_authenticated/admin'
-    | '/_authenticated/assistente'
     | '/_authenticated/conta'
     | '/_authenticated/inicio'
     | '/_authenticated/movimentacoes'
@@ -155,13 +131,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/assistente': {
-      id: '/_authenticated/assistente'
-      path: '/assistente'
-      fullPath: '/assistente'
-      preLoaderRoute: typeof AuthenticatedAssistenteRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
     '/_authenticated/conta': {
       id: '/_authenticated/conta'
       path: '/conta'
@@ -188,7 +157,6 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
-  AuthenticatedAssistenteRoute: typeof AuthenticatedAssistenteRoute
   AuthenticatedContaRoute: typeof AuthenticatedContaRoute
   AuthenticatedInicioRoute: typeof AuthenticatedInicioRoute
   AuthenticatedMovimentacoesRoute: typeof AuthenticatedMovimentacoesRoute
@@ -196,7 +164,6 @@ interface AuthenticatedRouteRouteChildren {
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminRoute: AuthenticatedAdminRoute,
-  AuthenticatedAssistenteRoute: AuthenticatedAssistenteRoute,
   AuthenticatedContaRoute: AuthenticatedContaRoute,
   AuthenticatedInicioRoute: AuthenticatedInicioRoute,
   AuthenticatedMovimentacoesRoute: AuthenticatedMovimentacoesRoute,
