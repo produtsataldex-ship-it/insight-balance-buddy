@@ -2,7 +2,6 @@ import { createFileRoute, Link } from '@tanstack/react-router';
 import { useState } from 'react';
 import { Plus, Eye, EyeOff, ChevronLeft, ChevronRight, CalendarClock } from 'lucide-react';
 import { AppShell } from '@/components/patrion/AppShell';
-import { HomeVoiceEntry } from '@/components/patrion/HomeVoiceEntry';
 import { ExpenseDonut } from '@/components/patrion/ExpenseDonut';
 import { FixedExpenses, ToolsStrip } from '@/components/patrion/HomeSections';
 import { Button } from '@/components/ui/button';
@@ -50,7 +49,6 @@ function HomePage() {
         </div>
         <p className="mt-4 inline-flex max-w-full items-center gap-2 rounded-full bg-muted px-4 py-2 text-xs"><CalendarClock className="size-4 shrink-0 text-primary" /><span className="truncate">Previsto no fim do mês · estimativa</span><span className="font-medium text-primary tabular-nums">{formatBRL(forecastBalance(valid, today, period.end), hide)}</span></p>
       </section>
-      <HomeVoiceEntry />
       <div className="mb-8 flex justify-center"><Button variant="outline" className="rounded-full" onClick={() => setAdding(true)}><Plus />Adicionar manualmente</Button></div>
       <FixedExpenses rows={fixedRows} categories={categories.data ?? []} hide={hide} />
       <section className="mb-8"><h2 className="mb-3 text-xl">Gastos por categoria</h2><ExpenseDonut groups={groups.map(g => ({ ...g, name: categories.data?.find(c => c.id === g.category_id)?.name ?? 'Sem categoria' }))} total={totals.expense} hide={hide} /></section>
