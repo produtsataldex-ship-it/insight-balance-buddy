@@ -72,6 +72,7 @@ export type Database = {
           id: string
           meta: Json | null
           role: string
+          thread_id: string | null
           user_id: string
         }
         Insert: {
@@ -80,6 +81,7 @@ export type Database = {
           id?: string
           meta?: Json | null
           role: string
+          thread_id?: string | null
           user_id: string
         }
         Update: {
@@ -88,6 +90,39 @@ export type Database = {
           id?: string
           meta?: Json | null
           role?: string
+          thread_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assistant_messages_thread_id_fkey"
+            columns: ["thread_id"]
+            isOneToOne: false
+            referencedRelation: "assistant_threads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      assistant_threads: {
+        Row: {
+          created_at: string
+          id: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          title?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          title?: string
+          updated_at?: string
           user_id?: string
         }
         Relationships: []
@@ -121,6 +156,7 @@ export type Database = {
       }
       categories: {
         Row: {
+          color: string
           created_at: string
           icon: string
           id: string
@@ -129,6 +165,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          color?: string
           created_at?: string
           icon?: string
           id?: string
@@ -137,6 +174,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          color?: string
           created_at?: string
           icon?: string
           id?: string
@@ -156,6 +194,7 @@ export type Database = {
           last_seen_at: string | null
           status: string
           updated_at: string
+          welcome_seen_at: string | null
         }
         Insert: {
           created_at?: string
@@ -166,6 +205,7 @@ export type Database = {
           last_seen_at?: string | null
           status?: string
           updated_at?: string
+          welcome_seen_at?: string | null
         }
         Update: {
           created_at?: string
@@ -176,6 +216,7 @@ export type Database = {
           last_seen_at?: string | null
           status?: string
           updated_at?: string
+          welcome_seen_at?: string | null
         }
         Relationships: []
       }
