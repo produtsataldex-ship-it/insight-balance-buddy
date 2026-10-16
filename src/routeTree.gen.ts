@@ -16,6 +16,9 @@ import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedContaRouteImport } from './routes/_authenticated/conta'
 import { Route as AuthenticatedInicioRouteImport } from './routes/_authenticated/inicio'
 import { Route as AuthenticatedMovimentacoesRouteImport } from './routes/_authenticated/movimentacoes'
+import { Route as AuthenticatedAssistenteIndexRouteImport } from './routes/_authenticated/assistente.index'
+import { Route as AuthenticatedAssistenteThreadIdRouteImport } from './routes/_authenticated/assistente.$threadId'
+import { Route as AuthenticatedAssistenteHistoricoRouteImport } from './routes/_authenticated/assistente.historico'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -52,6 +55,24 @@ const AuthenticatedMovimentacoesRoute =
     path: '/movimentacoes',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedAssistenteIndexRoute =
+  AuthenticatedAssistenteIndexRouteImport.update({
+    id: '/assistente/',
+    path: '/assistente/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedAssistenteThreadIdRoute =
+  AuthenticatedAssistenteThreadIdRouteImport.update({
+    id: '/assistente/$threadId',
+    path: '/assistente/$threadId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedAssistenteHistoricoRoute =
+  AuthenticatedAssistenteHistoricoRouteImport.update({
+    id: '/assistente/historico',
+    path: '/assistente/historico',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -60,6 +81,9 @@ export interface FileRoutesByFullPath {
   '/conta': typeof AuthenticatedContaRoute
   '/inicio': typeof AuthenticatedInicioRoute
   '/movimentacoes': typeof AuthenticatedMovimentacoesRoute
+  '/assistente/$threadId': typeof AuthenticatedAssistenteThreadIdRoute
+  '/assistente/historico': typeof AuthenticatedAssistenteHistoricoRoute
+  '/assistente/': typeof AuthenticatedAssistenteIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -68,6 +92,9 @@ export interface FileRoutesByTo {
   '/conta': typeof AuthenticatedContaRoute
   '/inicio': typeof AuthenticatedInicioRoute
   '/movimentacoes': typeof AuthenticatedMovimentacoesRoute
+  '/assistente/$threadId': typeof AuthenticatedAssistenteThreadIdRoute
+  '/assistente/historico': typeof AuthenticatedAssistenteHistoricoRoute
+  '/assistente': typeof AuthenticatedAssistenteIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -78,12 +105,33 @@ export interface FileRoutesById {
   '/_authenticated/conta': typeof AuthenticatedContaRoute
   '/_authenticated/inicio': typeof AuthenticatedInicioRoute
   '/_authenticated/movimentacoes': typeof AuthenticatedMovimentacoesRoute
+  '/_authenticated/assistente/$threadId': typeof AuthenticatedAssistenteThreadIdRoute
+  '/_authenticated/assistente/historico': typeof AuthenticatedAssistenteHistoricoRoute
+  '/_authenticated/assistente/': typeof AuthenticatedAssistenteIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/admin' | '/conta' | '/inicio' | '/movimentacoes'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/admin'
+    | '/conta'
+    | '/inicio'
+    | '/movimentacoes'
+    | '/assistente/$threadId'
+    | '/assistente/historico'
+    | '/assistente/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/admin' | '/conta' | '/inicio' | '/movimentacoes'
+  to:
+    | '/'
+    | '/auth'
+    | '/admin'
+    | '/conta'
+    | '/inicio'
+    | '/movimentacoes'
+    | '/assistente/$threadId'
+    | '/assistente/historico'
+    | '/assistente'
   id:
     | '__root__'
     | '/'
@@ -93,6 +141,9 @@ export interface FileRouteTypes {
     | '/_authenticated/conta'
     | '/_authenticated/inicio'
     | '/_authenticated/movimentacoes'
+    | '/_authenticated/assistente/$threadId'
+    | '/_authenticated/assistente/historico'
+    | '/_authenticated/assistente/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -152,6 +203,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedMovimentacoesRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/assistente/': {
+      id: '/_authenticated/assistente/'
+      path: '/assistente'
+      fullPath: '/assistente/'
+      preLoaderRoute: typeof AuthenticatedAssistenteIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/assistente/$threadId': {
+      id: '/_authenticated/assistente/$threadId'
+      path: '/assistente/$threadId'
+      fullPath: '/assistente/$threadId'
+      preLoaderRoute: typeof AuthenticatedAssistenteThreadIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/assistente/historico': {
+      id: '/_authenticated/assistente/historico'
+      path: '/assistente/historico'
+      fullPath: '/assistente/historico'
+      preLoaderRoute: typeof AuthenticatedAssistenteHistoricoRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
@@ -160,6 +232,9 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedContaRoute: typeof AuthenticatedContaRoute
   AuthenticatedInicioRoute: typeof AuthenticatedInicioRoute
   AuthenticatedMovimentacoesRoute: typeof AuthenticatedMovimentacoesRoute
+  AuthenticatedAssistenteThreadIdRoute: typeof AuthenticatedAssistenteThreadIdRoute
+  AuthenticatedAssistenteHistoricoRoute: typeof AuthenticatedAssistenteHistoricoRoute
+  AuthenticatedAssistenteIndexRoute: typeof AuthenticatedAssistenteIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -167,6 +242,9 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedContaRoute: AuthenticatedContaRoute,
   AuthenticatedInicioRoute: AuthenticatedInicioRoute,
   AuthenticatedMovimentacoesRoute: AuthenticatedMovimentacoesRoute,
+  AuthenticatedAssistenteThreadIdRoute: AuthenticatedAssistenteThreadIdRoute,
+  AuthenticatedAssistenteHistoricoRoute: AuthenticatedAssistenteHistoricoRoute,
+  AuthenticatedAssistenteIndexRoute: AuthenticatedAssistenteIndexRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
