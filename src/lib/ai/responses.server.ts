@@ -17,7 +17,9 @@ export async function createResponsesCall(request: Request, messages: { role: 'u
   try {
     const stream = await streamResponse({
       model: 'openai/gpt-6-astra',
-      input: messages.map(m => ({ role: m.role, content: m.role === 'assistant' ? [{ type: 'output_text' as const, text: m.content, annotations: [] }] : m.content })),
+      input: messages.map(m => m.role === 'assistant'
+        ? { role: 'assistant' as const, content: [{ type: 'output_text' as const, text: m.content, annotations: [] }] }
+        : { role: 'user' as const, content: m.content }),
       instructions, reasoning: { effort: 'low', summary: 'auto' }, include: ['reasoning.encrypted_content'],
       text: { format: { type: 'json_schema', name: 'patrion_assistant', strict: true, schema } },
     }, { signal: request.signal, maxRetries: 0 });
