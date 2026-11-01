@@ -6,8 +6,9 @@ import { Input } from '@/components/ui/input';
 import { useCategories, useSaveTransactions, useUpdateTransaction, type Transaction } from '@/lib/data';
 import { todayISO, splitInstallments, addMonths } from '@/lib/finance';
 import { PAYMENT_METHODS } from '@/lib/format';
-export function TransactionEditor({transaction,onClose}:{transaction?:Transaction|undefined;onClose:()=>void}){
- const [type,setType]=useState(transaction?.type??'expense');const [amount,setAmount]=useState(String(transaction?.amount??''));const [description,setDescription]=useState(transaction?.description??'');const [date,setDate]=useState(transaction?.occurred_on??todayISO());const [status,setStatus]=useState(transaction?.status??'paid');const [category,setCategory]=useState(transaction?.category_id??'');const [method,setMethod]=useState(transaction?.payment_method??'Pix');const [installments,setInstallments]=useState(1);
+import { categoryColor } from '@/lib/category-colors';
+export function TransactionEditor({transaction,onClose,initialCategory}:{transaction?:Transaction|undefined;onClose:()=>void;initialCategory?:string|undefined}){
+ const [type,setType]=useState(transaction?.type??'expense');const [amount,setAmount]=useState(String(transaction?.amount??''));const [description,setDescription]=useState(transaction?.description??'');const [date,setDate]=useState(transaction?.occurred_on??todayISO());const [status,setStatus]=useState(transaction?.status??'paid');const [category,setCategory]=useState(transaction?.category_id??initialCategory??'');const [method,setMethod]=useState(transaction?.payment_method??'Pix');const [installments,setInstallments]=useState(1);
  const categories=useCategories();const save=useSaveTransactions();const update=useUpdateTransaction();
  async function submit(e:React.FormEvent){e.preventDefault();const value=Number(amount.replace(',','.'));if(!Number.isFinite(value)||value<=0){toast.error('Informe um valor maior que zero.');return;}try{
  const base={type,description:description.trim(),amount:value,occurred_on:date,status,category_id:category||null,payment_method:method,paid_at:status==='paid'?new Date().toISOString():null};
@@ -15,6 +16,7 @@ export function TransactionEditor({transaction,onClose}:{transaction?:Transactio
  }catch(e){toast.error(e instanceof Error?e.message:'Não foi possível salvar.');}}
  const field='h-11 w-full rounded-xl border border-input bg-card px-3 text-sm text-foreground';
  return <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-background/90 p-4 backdrop-blur-sm" role="dialog" aria-modal="true" aria-label={transaction?'Editar movimentação':'Nova movimentação'}><form onSubmit={submit} className="surface max-h-[90dvh] w-full max-w-md space-y-4 overflow-y-auto p-6"><div className="flex items-center justify-between"><h2 className="text-xl">{transaction?'Editar':'Nova'} movimentação</h2><Button type="button" variant="ghost" size="icon" aria-label="Fechar" onClick={onClose}><X/></Button></div>
+ {category && <div className="h-1 rounded-full" style={{ background: categoryColor(categories.data?.find(c => c.id === category)) }} />}
  <label className="block text-sm">Tipo<select className={field+' mt-2'} value={type} onChange={e=>{setType(e.target.value);setCategory('');}}><option value="expense">Despesa</option><option value="income">Receita</option><option value="transfer">Transferência</option></select></label>
  <label className="block text-sm">Valor (R$)<Input className="mt-2" aria-label="Valor" inputMode="decimal" placeholder="0,00" value={amount} onChange={e=>setAmount(e.target.value)} required/></label>
  <label className="block text-sm">Descrição<Input className="mt-2" aria-label="Descrição" value={description} onChange={e=>setDescription(e.target.value)} required/></label>

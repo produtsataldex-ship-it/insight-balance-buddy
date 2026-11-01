@@ -21,6 +21,7 @@ export function useVoiceInput(onTranscript: (text: string) => void) {
   useEffect(() => () => recognition.current?.abort(), []);
 
   function stop() { recognition.current?.stop(); }
+  function cancel() { const session = recognition.current; recognition.current = null; if (session) { session.onresult = null; session.onend = null; session.onerror = null; session.abort(); } setListening(false); setError(''); }
   function start() {
     if (listening) { stop(); return; }
     const browser = window as VoiceWindow;
@@ -46,5 +47,5 @@ export function useVoiceInput(onTranscript: (text: string) => void) {
     recognition.current = session;
     try { session.start(); setListening(true); } catch { setError('Não foi possível iniciar o microfone. Digite seu gasto.'); }
   }
-  return { listening, error, start, stop };
+  return { listening, error, start, stop, cancel };
 }
