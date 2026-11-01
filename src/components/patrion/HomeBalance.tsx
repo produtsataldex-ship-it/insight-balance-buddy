@@ -17,7 +17,7 @@ export function HomeBalance({ balance, forecast, hide, onManual }: { balance: nu
   function cancel() { held.current = false; voice.cancel(); }
   async function send() {
     if (!transcript.trim() || busy) return; setBusy(true); setError('');
-    try { const threadId = await createThread(); await navigate({ to: '/assistente/$threadId', params: { threadId }, search: { initial: transcript.trim() } }); }
+    try { const threadId = await createThread(); await navigate({ to: '/assistente/$threadId', params: { threadId }, search: { q: transcript.trim() } }); }
     catch { setError('Não foi possível abrir o assistente. Tente novamente.'); } finally { setBusy(false); }
   }
   return <section className="balance-ambient relative mb-6 overflow-hidden py-6 text-center"><div className="relative flex flex-col items-center"><PatrionLogo size={56} state={voice.listening ? 'busy' : 'idle'} />
