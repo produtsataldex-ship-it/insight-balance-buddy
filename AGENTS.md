@@ -15,3 +15,6 @@
 - Home voice entry reuses authenticated assistant proposals and the existing confirmation flow; browser speech recognition only produces an editable transcript.
 - Category visualization uses the shared financial aggregation and semantic chart tokens; no chart data is seeded in the UI.
 - The browser route gate reads the cached session for immediate tab navigation; data authorization remains enforced by RLS and authenticated server functions.
+- The Patrion logo and favicon use public same-origin icon derivatives so exports work without Lovable's asset-serving proxy.
+- Home balance owns hold-to-speak and editable transcript review; shared category controls use owner-scoped hooks and the same palette across charts and forms.
+- AI Responses calls use the Gateway SDK with generated model contracts and server-side schema validation; confirmation remains a separate authenticated operation.

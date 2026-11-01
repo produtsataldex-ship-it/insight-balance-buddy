@@ -47,7 +47,7 @@ function ErrorComponent({ error, reset }: ErrorComponentProps) {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="max-w-md text-center">
-        <h1 className="text-xl font-semibold tracking-tight text-foreground">
+        <h1 className="text-xl font-semibold text-foreground">
           This page didn't load
         </h1>
         <p className="mt-2 text-sm text-muted-foreground">
@@ -94,7 +94,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         rel: "stylesheet",
         href: appCss,
       },
-      { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
+      { rel: "icon", href: "/favicon.png", type: "image/png" },
+      { rel: "apple-touch-icon", href: "/apple-touch-icon.png" },
       { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Cal+Sans&family=Manrope:wght@400;500;600;700&display=swap" },
     ],
   }),

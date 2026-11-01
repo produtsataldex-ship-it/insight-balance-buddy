@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables, TablesInsert, TablesUpdate } from "@/integrations/supabase/types";
+import { CATEGORY_COLORS } from './category-colors';
 
 export type Transaction = Tables<"transactions">;
 export type Category = Tables<"categories">;
@@ -158,10 +159,12 @@ export function useDeleteRecurring() {
 export function useSaveCategory() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (v: { id?: string | undefined; name: string; kind: "income" | "expense"; icon?: string }) => {
+    mutationFn: async (v: { id?: string | undefined; name: string; kind: "income" | "expense"; icon?: string; color?: string }) => {
       const user_id = await uid();
-      if (v.id) check(await supabase.from("categories").update({ name: v.name, icon: v.icon ?? "tag" }).eq("id", v.id));
-      else check(await supabase.from("categories").insert({ name: v.name, kind: v.kind, icon: v.icon ?? "tag", user_id }));
+      const color = v.color ?? CATEGORY_COLORS[0];
+      if (!CATEGORY_COLORS.some(c => c === color)) throw new Error('Escolha uma cor da paleta Patrion.');
+      if (v.id) check(await supabase.from("categories").update({ name: v.name, icon: v.icon ?? "tag", color }).eq("id", v.id));
+      else check(await supabase.from("categories").insert({ name: v.name, kind: v.kind, icon: v.icon ?? "tag", color, user_id }));
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["categories"] }),
   });

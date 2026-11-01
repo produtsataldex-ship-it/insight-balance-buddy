@@ -18,6 +18,18 @@ class FakeRecognition {
 afterEach(() => { Reflect.deleteProperty(window, 'SpeechRecognition'); });
 
 describe('Voice input', () => {
+  it('cancels a recording without submitting its transcript', () => {
+    Object.defineProperty(window, 'SpeechRecognition', { configurable: true, value: FakeRecognition });
+    const transcript = vi.fn();
+    const { result } = renderHook(() => useVoiceInput(transcript));
+    act(() => result.current.start());
+    const session = FakeRecognition.latest;
+    act(() => result.current.cancel());
+    session.onresult?.({ results: { length: 1, 0: { 0: { transcript: 'Gastei 32 reais de Uber.' } } } });
+    expect(transcript).not.toHaveBeenCalled();
+    expect(session.abort).toHaveBeenCalledOnce();
+    expect(result.current.listening).toBe(false);
+  });
   it('captures the spoken expense without changing the amount', () => {
     Object.defineProperty(window, 'SpeechRecognition', { configurable: true, value: FakeRecognition });
     const transcript = vi.fn();
