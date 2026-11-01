@@ -6,6 +6,7 @@ import { useTools, useUpdateTransaction, type Transaction, type Category } from 
 import { faviconUrl } from '@/lib/finance';
 import { formatBRL } from '@/lib/format';
 import { ToolEditor } from './ToolEditor';
+import { categoryColor } from '@/lib/category-colors';
 import { cn } from '@/lib/utils';
 
 export const TONES = ['var(--chart-1)', 'var(--chart-2)', 'var(--chart-3)', 'var(--chart-4)', 'var(--chart-5)'];
@@ -37,7 +38,7 @@ export function FixedExpenses({ rows, categories, hide }: { rows: Transaction[];
         const cat = categories.find(c => c.id === r.category_id); const paid = r.status === 'paid';
         return <div key={r.id} className="w-44 shrink-0 snap-start animate-fade-up" style={{ animationDelay: `${i * 40}ms` }}>
           <div className="surface rounded-3xl p-4">
-            <div className="mb-4 flex items-start justify-between"><IconTile icon={categoryIcon(cat?.name ?? r.description)} tone={TONES[i % TONES.length]!} /><span className="flex items-center gap-1 rounded-full bg-muted px-2 py-1 text-xs"><Repeat className="size-3 text-primary" />dia {Number(r.occurred_on.slice(8))}</span></div>
+            <div className="mb-4 flex items-start justify-between"><IconTile icon={categoryIcon(cat?.name ?? r.description)} tone={categoryColor(cat)} /><span className="flex items-center gap-1 rounded-full bg-muted px-2 py-1 text-xs"><Repeat className="size-3 text-primary" />dia {Number(r.occurred_on.slice(8))}</span></div>
             <p className="break-words font-display text-xl tabular-nums">{formatBRL(Number(r.amount), hide)}</p>
             <p className="mt-1 truncate text-sm">{r.description || cat?.name || 'Despesa fixa'}</p>
             <p className="mt-3 flex items-center justify-between text-xs text-muted-foreground">{paid ? 'Pago' : 'Pendente'}<span className={cn('size-2 rounded-full', paid ? 'bg-primary' : 'bg-expense')} /></p>
