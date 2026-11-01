@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import logo from "@/assets/patrion-logo.jpg.asset.json";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 export type LogoState = "idle" | "intro" | "loading" | "busy";
@@ -34,7 +34,7 @@ export function PatrionLogo({ size = 40, state = "idle", className, onClick, lab
 
   const img = (
     <img
-      src={logo.url}
+      src="/apple-touch-icon.png"
       alt={label}
       width={size}
       height={size}
@@ -46,17 +46,19 @@ export function PatrionLogo({ size = 40, state = "idle", className, onClick, lab
 
   if (!onClick) return <span className={cn("inline-flex shrink-0", className)}>{img}</span>;
   return (
-    <button
+    <Button
+      variant="ghost"
+      size="icon"
       type="button"
       aria-label={label}
       onClick={() => {
         setTap((n) => n + 1);
         onClick();
       }}
-      className={cn("inline-flex shrink-0 rounded-full focus-visible:outline-2 focus-visible:outline-primary", className)}
+      className={cn("inline-flex h-auto w-auto shrink-0 rounded-full p-0 focus-visible:outline-2 focus-visible:outline-primary", className)}
     >
       {img}
-    </button>
+    </Button>
   );
 }
 

@@ -1,3 +1,6 @@
+- [ ] Corrigir logo e favicon para aparecerem também na Vercel.
+- [ ] Concluir boas-vindas, saldo com voz e cores de categorias da atualização v2.
+- [ ] Revisar assistente conectado, histórico e confirmação de lançamentos.
 - [ ] Acesso por convite de sete caracteres, sem cadastro público, e administrador indicado.
 - [ ] Painel administrativo para gerar e revogar códigos.
 - [ ] Navegação inferior apenas com ícones e login refinado no tema Patrion.
