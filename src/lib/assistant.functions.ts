@@ -8,7 +8,7 @@ export const askAssistant = createServerFn({ method: 'POST' })
   .middleware([requireSupabaseAuth])
   .inputValidator(z.object({ threadId: z.string().uuid(), text: z.string().trim().min(1).max(2000), requestId: z.string().uuid(), replyId: z.string().uuid(), today: z.string().regex(/^\d{4}-\d{2}-\d{2}$/) }))
   .handler(async ({ data, context }) => {
-    const db = context.supabase;
+    const db = context.supabase; const started = Date.now();
     // RLS limits threads to the owner; a missing row means it is not the caller's conversation.
     const thread = await db.from('assistant_threads').select('id,title').eq('id', data.threadId).maybeSingle();
     if (thread.error || !thread.data) return { error: 'Conversa não encontrada.' };
@@ -19,7 +19,7 @@ export const askAssistant = createServerFn({ method: 'POST' })
       db.rpc('is_active_user', { _user_id: context.userId }),
     ]);
     if (active.error || !active.data) throw new Error('Seu acesso está suspenso.');
-    if (transactions.error || categories.error || history.error) return { error: 'Não foi possível consultar seus dados. Tente novamente.' };
+    if (transactions.error || categories.error || history.error) { console.error('[assistant]', { correlationId: data.requestId, stage: 'load_data' }); return { error: 'Não foi possível consultar seus dados. Tente novamente.', kind: 'data' as const, correlationId: data.requestId }; }
     if (history.data.some(m => m.id === data.replyId)) return { error: null };
     const userMessage = await db.from('assistant_messages').upsert({ id: data.requestId, user_id: context.userId, thread_id: data.threadId, role: 'user', content: data.text }, { onConflict: 'id', ignoreDuplicates: true });
     if (userMessage.error) return { error: 'Não foi possível salvar a mensagem.' };
@@ -37,10 +37,16 @@ Análises: seja detalhado e preciso, cite categorias, datas e valores reais (ex.
 Registro: se houver pedido para registrar receita/despesa/transferência, proponha um lançamento e diga que ele aparece abaixo para confirmar; NUNCA afirme que já salvou. Reenvio de mensagem não é nova movimentação. Pergunte sobre valor, estabelecimento/categoria ou data ambíguos; deixe proposal null quando faltar informação. Use hoje se a data não foi citada. Gastei/paguei/recebi = paid; vencimentos futuros = pending. Parcelamentos e recorrências devem ser cadastrados em Movimentações. Se categoria estiver clara use somente ID da lista e tipo correspondente; caso contrário null. Perguntas financeiras recebem proposal null. Não prometa resultados financeiros.`));
       const proposal = safeProposal(output.proposal);
       const saved = await db.from('assistant_messages').upsert({ id: data.replyId, user_id: context.userId, thread_id: data.threadId, role: 'assistant', content: output.reply, meta: { proposal, table: safeTable(output.table), suggestions: safeSuggestions(output.suggestions) } }, { onConflict: 'id', ignoreDuplicates: true });
-      if (saved.error) return { error: 'A resposta não foi salva. Tente novamente.' };
+      if (saved.error) { console.error('[assistant]', { correlationId: data.requestId, stage: 'save_reply', code: saved.error.code }); return { error: 'A resposta não foi salva. Tente novamente.', kind: 'data' as const, correlationId: data.requestId }; }
+      console.info('[assistant]', { correlationId: data.requestId, stage: 'ok', ms: Date.now() - started });
       return { error: null };
-    } catch {
-      return { error: 'O assistente não conseguiu responder. Confira a conexão e tente novamente.' };
+    } catch (err) {
+      const { GatewayError } = await import('@lovable.dev/ai-gateway');
+      const { kindFromGatewayCode, ASSISTANT_ERROR_TEXT } = await import('@/lib/assistant-errors');
+      const kind = err instanceof GatewayError ? kindFromGatewayCode(err.code) : err instanceof SyntaxError || (err instanceof Error && err.name === 'ZodError') ? 'invalid_response' : 'temporary';
+      // Structured log without message content or credentials.
+      console.error('[assistant]', { correlationId: data.requestId, stage: 'ai_call', kind, code: err instanceof GatewayError ? err.code : err instanceof Error ? err.name : 'unknown', gatewayIds: err instanceof GatewayError ? err.ids : undefined, ms: Date.now() - started });
+      return { error: ASSISTANT_ERROR_TEXT[kind], kind, correlationId: data.requestId };
     }
   });
 

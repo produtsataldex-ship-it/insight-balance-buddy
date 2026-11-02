@@ -18,6 +18,7 @@ import { useVoiceInput } from '@/hooks/use-voice-input';
 import { formatBRL } from '@/lib/format';
 import { todayISO } from '@/lib/finance';
 import { categoryColor } from '@/lib/category-colors';
+import { ASSISTANT_ERROR_TEXT, kindFromClientError } from '@/lib/assistant-errors';
 
 const STARTERS = ['Quanto tenho disponível?', 'Qual foi minha maior despesa no mês passado?', 'Quais contas preciso pagar esta semana?'];
 const TYPE_LABEL = { expense: 'Despesa', income: 'Receita', transfer: 'Transferência' } as const;
@@ -49,7 +50,12 @@ export function AssistantChat({ threadId, initial }: { threadId: string; initial
       const result = await ask({ data: { ...payload, threadId, today: todayISO() } });
       await Promise.all([qc.invalidateQueries({ queryKey: ['assistant-messages', threadId] }), qc.invalidateQueries({ queryKey: ['assistant-threads'] })]);
       if (result.error) { setError(result.error); setText(clean); } else last.current = null;
-    } catch { setError('Sem conexão com o assistente. Sua mensagem foi mantida.'); setText(clean); }
+    } catch (e) {
+      const kind = kindFromClientError(e, navigator.onLine);
+      console.error('[assistant] client', { correlationId: payload.requestId, kind });
+      setError(ASSISTANT_ERROR_TEXT[kind]); setText(clean);
+      if (kind === 'auth') void navigate({ to: '/auth', search: { redirect: `/assistente/${threadId}` } as never });
+    }
     finally { setBusy(false); setPendingText(''); input.current?.focus(); }
   }
 
