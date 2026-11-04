@@ -10,3 +10,4 @@
 - [ ] Verificar lançamento por voz e navegação na conta real — bloqueado: não há sessão de teste autorizada; requer login na prévia.
 - [ ] Usar espaçamento normal nas letras em todo o aplicativo.
 - [ ] Testar regras de acesso e os fluxos disponíveis.
+- [ ] Atualização 6: instalação PWA, convite e instruções, cache sem dados privados e verificação mobile/publicada.
