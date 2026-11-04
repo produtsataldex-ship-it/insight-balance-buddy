@@ -8,6 +8,10 @@ export const Route = createFileRoute("/_authenticated")({
   ssr: false,
   beforeLoad: async ({ location }) => {
     // This is a UI gate only; RLS and authenticated server functions enforce access.
+    // "Permanecer conectado" off: end the session when the browser was closed.
+    if (localStorage.getItem("patrion-remember") === "0" && !sessionStorage.getItem("patrion-live")) {
+      await supabase.auth.signOut();
+    }
     const { data } = await supabase.auth.getSession();
     if (!data.session?.user) {
       throw redirect({ to: "/auth", search: { redirect: location.href } });
