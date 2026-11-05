@@ -53,8 +53,8 @@ function FixedPage() {
 
     <h2 className="mb-2 text-lg">Minhas despesas fixas</h2>
     {recurring.isPending ? <p className="text-muted-foreground">Carregando…</p> : recurring.error ? <p role="alert" className="text-destructive">Não foi possível carregar.</p> :
-      !recurring.data.length ? <div className="surface mb-6 rounded-2xl p-5 text-center"><p className="text-muted-foreground">Cadastre contas como aluguel, internet, energia ou Netflix para acompanhar os vencimentos.</p><Button className="mt-4" onClick={() => setEditing(null)}><Plus />Adicionar primeira conta</Button></div> :
-      <ul className="mb-8 space-y-2">{recurring.data.map(r => <li key={r.id} className="flex items-center gap-3 rounded-2xl border border-border p-3">
+      !recurring.data?.length ? <div className="surface mb-6 rounded-2xl p-5 text-center"><p className="text-muted-foreground">Cadastre contas como aluguel, internet, energia ou Netflix para acompanhar os vencimentos.</p><Button className="mt-4" onClick={() => setEditing(null)}><Plus />Adicionar primeira conta</Button></div> :
+      <ul className="mb-8 space-y-2">{(recurring.data ?? []).map(r => <li key={r.id} className="flex items-center gap-3 rounded-2xl border border-border p-3">
         <span className="size-2.5 shrink-0 rounded-full" style={{ background: categoryColor(cat(r.category_id)) }} />
         <div className="min-w-0 flex-1"><p className="truncate font-medium">{r.name}</p><p className="text-xs text-muted-foreground">{FREQ[r.frequency] ?? r.frequency} · desde {fmtDate(r.start_date)}{cat(r.category_id) ? ` · ${cat(r.category_id)?.name}` : ''}{!r.active ? ' · pausada' : ''}</p></div>
         <p className="tabular-nums">{formatBRL(Number(r.amount))}</p>
@@ -81,7 +81,7 @@ function RecurringEditor({ item, onClose }: { item: Recurring | null; onClose: (
   async function submit(e: React.FormEvent) {
     e.preventDefault(); const value = Number(amount.replace(',', '.'));
     if (!name.trim() || !(value > 0)) { setError('Informe nome e um valor maior que zero.'); return; }
-    try { await save.mutateAsync({ id: item?.id, values: { name: name.trim().slice(0, 120), amount: Math.round(value * 100) / 100, frequency, start_date: start, category_id: category || null, active } }); toast.success('Despesa fixa salva.'); onClose(); }
+    try { await save.mutateAsync({ ...(item ? { id: item.id } : {}), values: { name: name.trim().slice(0, 120), amount: Math.round(value * 100) / 100, frequency, start_date: start, category_id: category || null, active } }); toast.success('Despesa fixa salva.'); onClose(); }
     catch { setError('Não foi possível salvar. Tente novamente.'); }
   }
   const select = 'h-11 w-full rounded-xl border border-input bg-card px-3 text-sm';
