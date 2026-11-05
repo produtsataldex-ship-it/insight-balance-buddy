@@ -15,6 +15,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedContaRouteImport } from './routes/_authenticated/conta'
+import { Route as AuthenticatedFixosRouteImport } from './routes/_authenticated/fixos'
 import { Route as AuthenticatedInicioRouteImport } from './routes/_authenticated/inicio'
 import { Route as AuthenticatedMovimentacoesRouteImport } from './routes/_authenticated/movimentacoes'
 import { Route as AuthenticatedAssistenteIndexRouteImport } from './routes/_authenticated/assistente.index'
@@ -48,6 +49,11 @@ const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
 const AuthenticatedContaRoute = AuthenticatedContaRouteImport.update({
   id: '/conta',
   path: '/conta',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedFixosRoute = AuthenticatedFixosRouteImport.update({
+  id: '/fixos',
+  path: '/fixos',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedInicioRoute = AuthenticatedInicioRouteImport.update({
@@ -86,6 +92,7 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof ResetPasswordRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/conta': typeof AuthenticatedContaRoute
+  '/fixos': typeof AuthenticatedFixosRoute
   '/inicio': typeof AuthenticatedInicioRoute
   '/movimentacoes': typeof AuthenticatedMovimentacoesRoute
   '/assistente/$threadId': typeof AuthenticatedAssistenteThreadIdRoute
@@ -98,6 +105,7 @@ export interface FileRoutesByTo {
   '/reset-password': typeof ResetPasswordRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/conta': typeof AuthenticatedContaRoute
+  '/fixos': typeof AuthenticatedFixosRoute
   '/inicio': typeof AuthenticatedInicioRoute
   '/movimentacoes': typeof AuthenticatedMovimentacoesRoute
   '/assistente/$threadId': typeof AuthenticatedAssistenteThreadIdRoute
@@ -112,6 +120,7 @@ export interface FileRoutesById {
   '/reset-password': typeof ResetPasswordRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/conta': typeof AuthenticatedContaRoute
+  '/_authenticated/fixos': typeof AuthenticatedFixosRoute
   '/_authenticated/inicio': typeof AuthenticatedInicioRoute
   '/_authenticated/movimentacoes': typeof AuthenticatedMovimentacoesRoute
   '/_authenticated/assistente/$threadId': typeof AuthenticatedAssistenteThreadIdRoute
@@ -126,6 +135,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/admin'
     | '/conta'
+    | '/fixos'
     | '/inicio'
     | '/movimentacoes'
     | '/assistente/$threadId'
@@ -138,6 +148,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/admin'
     | '/conta'
+    | '/fixos'
     | '/inicio'
     | '/movimentacoes'
     | '/assistente/$threadId'
@@ -151,6 +162,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/_authenticated/admin'
     | '/_authenticated/conta'
+    | '/_authenticated/fixos'
     | '/_authenticated/inicio'
     | '/_authenticated/movimentacoes'
     | '/_authenticated/assistente/$threadId'
@@ -209,6 +221,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedContaRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/fixos': {
+      id: '/_authenticated/fixos'
+      path: '/fixos'
+      fullPath: '/fixos'
+      preLoaderRoute: typeof AuthenticatedFixosRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/inicio': {
       id: '/_authenticated/inicio'
       path: '/inicio'
@@ -250,6 +269,7 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
   AuthenticatedContaRoute: typeof AuthenticatedContaRoute
+  AuthenticatedFixosRoute: typeof AuthenticatedFixosRoute
   AuthenticatedInicioRoute: typeof AuthenticatedInicioRoute
   AuthenticatedMovimentacoesRoute: typeof AuthenticatedMovimentacoesRoute
   AuthenticatedAssistenteThreadIdRoute: typeof AuthenticatedAssistenteThreadIdRoute
@@ -260,6 +280,7 @@ interface AuthenticatedRouteRouteChildren {
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminRoute: AuthenticatedAdminRoute,
   AuthenticatedContaRoute: AuthenticatedContaRoute,
+  AuthenticatedFixosRoute: AuthenticatedFixosRoute,
   AuthenticatedInicioRoute: AuthenticatedInicioRoute,
   AuthenticatedMovimentacoesRoute: AuthenticatedMovimentacoesRoute,
   AuthenticatedAssistenteThreadIdRoute: AuthenticatedAssistenteThreadIdRoute,
