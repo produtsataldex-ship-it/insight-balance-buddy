@@ -59,13 +59,13 @@ export function PwaInstallProvider({ children }: { children: ReactNode }) {
           {platform === 'ios' ? <><li className="flex gap-3"><Share className="size-5 shrink-0 text-primary" />Abra o PATRION no Safari e toque em Compartilhar.</li><li className="flex gap-3"><PlusSquare className="size-5 shrink-0 text-primary" />Escolha “Adicionar à Tela de Início” e confirme em “Adicionar”.</li></> : <><li className="flex gap-3"><Menu className="size-5 shrink-0 text-primary" />Abra o menu do navegador.</li><li className="flex gap-3"><Download className="size-5 shrink-0 text-primary" />{platform === 'android' ? 'Escolha “Instalar aplicativo” ou “Adicionar à tela inicial”.' : 'Procure “Instalar PATRION” na barra de endereço ou no menu do Chrome ou Edge.'}</li><li>Se essa opção não aparecer, este navegador não oferece instalação. Abra no Chrome ou Edge.</li></>}
         </ol>}
         {error && <p role="alert" className="text-sm text-muted-foreground">{error}</p>}
-        {native && <Button className="w-full" disabled={busy} onClick={() => void install()}><Download />{busy ? 'ABRINDO…' : 'INSTALAR APLICATIVO'}</Button>}
+        {native && <Button className="w-full" disabled={busy} onClick={() => void install()}><Download />{busy ? 'ABRINDO…' : 'INSTALAR PATRION'}</Button>}
         <Button variant="ghost" className="w-full text-muted-foreground" onClick={close}>AGORA NÃO</Button>
       </DialogContent>
     </Dialog>
   </InstallContext.Provider>;
 }
-export function PwaInstallButton() {
+export function PwaInstallButton({ className = 'w-full' }: { className?: string }) {
   const { installed, openInstall } = useContext(InstallContext);
-  return <Button variant="outline" className="w-full" onClick={openInstall} disabled={installed}><Download />{installed ? 'Aplicativo instalado' : 'Instalar aplicativo'}</Button>;
+  return <Button variant="outline" className={className} onClick={openInstall} disabled={installed}><Download />{installed ? 'PATRION instalado' : 'INSTALAR PATRION'}</Button>;
 }

@@ -1,4 +1,4 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { AccessPage } from '@/components/patrion/AccessPage';
+import { LandingPage } from '@/components/patrion/LandingPage';
 import { pageMeta } from '@/lib/meta';
-export const Route=createFileRoute('/')({head:()=>pageMeta('Patrion · Seu dinheiro, com clareza','Acesse seu controle financeiro pessoal Patrion com segurança e convite exclusivo.'),component:AccessPage});
+export const Route = createFileRoute('/')({ head: () => pageMeta('PATRION · Controle financeiro com inteligência artificial', 'Organize receitas, despesas e contas fixas, converse com uma IA sobre seu dinheiro e acompanhe sua evolução no PATRION.'), component: LandingPage });
