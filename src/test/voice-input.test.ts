@@ -37,11 +37,12 @@ describe('Voice input', () => {
     act(() => result.current.start());
     expect(result.current.listening).toBe(true);
     act(() => FakeRecognition.latest.onresult?.({ results: { length: 1, 0: { 0: { transcript: 'Gastei 32 reais de Uber.' } } } }));
-    expect(transcript).toHaveBeenCalledExactlyOnceWith('Gastei 32 reais de Uber.');
+    expect(transcript).not.toHaveBeenCalled();
     act(() => FakeRecognition.latest.onend?.());
+    expect(transcript).toHaveBeenCalledExactlyOnceWith('Gastei 32 reais de Uber.');
     expect(result.current.listening).toBe(false);
     unmount();
-    expect(FakeRecognition.latest.abort).toHaveBeenCalledOnce();
+    expect(FakeRecognition.latest.abort).not.toHaveBeenCalled();
   });
 
   it('stops an active recording rather than starting another one', () => {
@@ -63,5 +64,14 @@ describe('Voice input', () => {
     expect(result.current.listening).toBe(false);
     expect(result.current.error.length).toBeGreaterThan(0);
     expect(transcript).not.toHaveBeenCalled();
+  });
+  it.each(['Gastei 35 reais no mercado.', 'Recebi 500 reais de um serviço.', 'Paguei 80 reais de combustível.', 'Ganhei 150 reais hoje.', 'Gastei 25 reais no almoço.'])('preserves spoken income or expense for review: %s', phrase => {
+    Object.defineProperty(window, 'SpeechRecognition', { configurable: true, value: FakeRecognition });
+    const transcript = vi.fn(); const { result } = renderHook(() => useVoiceInput(transcript));
+    act(() => result.current.start());
+    act(() => FakeRecognition.latest.onresult?.({ results: { length: 1, 0: { 0: { transcript: phrase } } } }));
+    expect(transcript).not.toHaveBeenCalled();
+    act(() => result.current.stop()); act(() => FakeRecognition.latest.onend?.());
+    expect(transcript).toHaveBeenCalledExactlyOnceWith(phrase);
   });
 });

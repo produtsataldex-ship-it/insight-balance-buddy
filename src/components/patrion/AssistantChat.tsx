@@ -3,13 +3,17 @@ import { Link, useNavigate } from '@tanstack/react-router';
 import { useServerFn } from '@tanstack/react-start';
 import { useQueryClient } from '@tanstack/react-query';
 import { ArrowUp, Check, History, Mic, Pencil, Plus, RotateCcw, Square } from 'lucide-react';
-import ReactMarkdown from 'react-markdown';
+import { Conversation, ConversationContent, ConversationScrollButton } from '@/components/ai-elements/conversation';
+import { Message, MessageContent, MessageResponse } from '@/components/ai-elements/message';
+import { PromptInput, PromptInputTextarea, PromptInputFooter, PromptInputSubmit } from '@/components/ai-elements/prompt-input';
+import { Shimmer } from '@/components/ai-elements/shimmer';
+import { ConversationLibrary } from './ConversationLibrary';
 import { toast } from 'sonner';
 import { AppShell } from './AppShell';
 import { PatrionLogo } from './PatrionLogo';
 import { AssistantConfirmation } from './AssistantConfirmation';
 import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { askAssistant, confirmAssistantTransaction } from '@/lib/assistant.functions';
 import { safeProposal, safeSuggestions, safeTable, type TransactionProposal } from '@/lib/assistant-schema';
 import { useCategories, useTransactions } from '@/lib/data';
@@ -28,21 +32,23 @@ function metaOf(meta: unknown) { return meta && typeof meta === 'object' && !Arr
 export function AssistantChat({ threadId, initial }: { threadId: string; initial?: string | undefined }) {
   const messages = useThreadMessages(threadId); const transactions = useTransactions(); const categories = useCategories();
   const ask = useServerFn(askAssistant); const confirm = useServerFn(confirmAssistantTransaction); const qc = useQueryClient(); const navigate = useNavigate();
+  const [libraryOpen, setLibraryOpen] = useState(false);
   const [text, setText] = useState(''); const [pendingText, setPendingText] = useState(''); const [busy, setBusy] = useState(false); const [error, setError] = useState('');
   const [editing, setEditing] = useState<{ messageId: string; proposal: TransactionProposal }>(); const [confirming, setConfirming] = useState<string>();
-  const last = useRef<{ text: string; requestId: string; replyId: string } | null>(null); const end = useRef<HTMLDivElement>(null); const input = useRef<HTMLTextAreaElement>(null); const autoSent = useRef(false);
+  const last = useRef<{ text: string; requestId: string; replyId: string } | null>(null); const end = useRef<HTMLDivElement>(null); const input = useRef<HTMLTextAreaElement>(null); const autoSent = useRef(false); const sending = useRef(false);
   const voice = useVoiceInput(value => { setText(value); setError(''); input.current?.focus(); });
 
   useEffect(() => { end.current?.scrollIntoView({ behavior: 'smooth', block: 'end' }); }, [messages.data?.length, busy]);
   useEffect(() => { input.current?.focus(); }, []);
   useEffect(() => {
-    if (!initial || autoSent.current) return; autoSent.current = true;
+    if (!initial || autoSent.current || !messages.isSuccess) return; autoSent.current = true;
     void navigate({ to: '/assistente/$threadId', params: { threadId }, search: {}, replace: true });
     void send(initial);
-  }, [initial]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [initial, messages.isSuccess]); // eslint-disable-line react-hooks/exhaustive-deps
 
   async function send(value = text) {
-    const clean = value.trim(); if (busy || !clean) return;
+    const clean = value.trim(); if (sending.current || !clean || !messages.isSuccess) return;
+    sending.current = true;
     setBusy(true); setError(''); setPendingText(clean); setText('');
     // Same text after a failure reuses ids so the server never duplicates the exchange.
     const payload = last.current?.text === clean ? last.current : { text: clean, requestId: crypto.randomUUID(), replyId: crypto.randomUUID() }; last.current = payload;
@@ -54,9 +60,9 @@ export function AssistantChat({ threadId, initial }: { threadId: string; initial
       const kind = kindFromClientError(e, navigator.onLine);
       console.error('[assistant] client', { correlationId: payload.requestId, kind });
       setError(ASSISTANT_ERROR_TEXT[kind]); setText(clean);
-      if (kind === 'auth') void navigate({ to: '/auth', search: { redirect: `/assistente/${threadId}` } as never });
+      if (kind === 'auth') void navigate({ to: '/auth', search: { redirect: `/assistente/${threadId}` } });
     }
-    finally { setBusy(false); setPendingText(''); input.current?.focus(); }
+    finally { sending.current = false; setBusy(false); setPendingText(''); input.current?.focus(); }
   }
 
   async function quickConfirm(messageId: string, proposal: TransactionProposal) {
@@ -69,26 +75,26 @@ export function AssistantChat({ threadId, initial }: { threadId: string; initial
   const rows = messages.data ?? []; const lastAssistant = [...rows].reverse().find(m => m.role === 'assistant');
   const suggestions = !busy && lastAssistant ? safeSuggestions(metaOf(lastAssistant.meta)['suggestions']) : [];
 
-  return <AppShell>
+  return <AppShell wide><div className="grid min-w-0 gap-6 xl:grid-cols-[16rem_minmax(0,1fr)]"><aside className="hidden max-h-[85dvh] overflow-y-auto border-r border-border pr-4 xl:block"><ConversationLibrary activeId={threadId} /></aside><div className="flex h-[calc(100dvh-var(--safe-top)-8.5rem)] min-h-96 min-w-0 flex-col md:h-[calc(100dvh-5rem)]">
     <header className="sticky top-0 z-10 -mx-4 mb-4 flex items-center gap-3 border-b border-border bg-background/80 px-4 py-3 backdrop-blur-xl">
       <PatrionLogo size={36} state={busy ? 'busy' : 'idle'} />
       <div className="min-w-0 flex-1"><p className="font-display text-lg leading-tight">PATRION</p><p className="text-xs text-muted-foreground" aria-live="polite">{busy ? 'pensando…' : 'assistente financeiro'}</p></div>
-      <Button asChild size="icon" variant="ghost" aria-label="Histórico de conversas" title="Histórico"><Link to="/assistente/historico"><History /></Link></Button>
+      <Button size="icon" variant="ghost" aria-label="Conversas anteriores" title="Conversas anteriores" onClick={() => setLibraryOpen(true)}><History /></Button>
       <Button asChild size="icon" variant="ghost" aria-label="Nova conversa" title="Nova conversa"><Link to="/assistente"><Plus /></Link></Button>
     </header>
 
-    <div className="flex min-h-[60dvh] flex-col gap-2 pb-4" aria-live="polite">
-      {messages.isPending ? <p className="text-sm text-muted-foreground">Carregando conversa…</p> : messages.error ? <p role="alert" className="text-destructive">Não foi possível carregar a conversa.</p> :
+    <Conversation className="min-h-0"><ConversationContent className="gap-4 px-0 py-3">
+      {messages.isPending ? <p className="text-sm text-muted-foreground">Carregando conversa…</p> : messages.error ? <div role="alert"><p className="text-destructive">Não foi possível carregar a conversa.</p><Button variant="outline" onClick={() => void messages.refetch()}>Tentar novamente</Button></div> :
         !rows.length && !pendingText ? <div className="flex flex-1 flex-col items-center justify-center py-8 text-center animate-fade-up">
           <PatrionLogo size={64} state="intro" /><h2 className="mt-4 text-2xl">Nova conversa</h2><p className="mt-1 text-sm text-muted-foreground">Pergunte ou registre um gasto.</p>
-          <div className="mt-6 flex w-full flex-col gap-2">{STARTERS.map(s => <button key={s} className="pressable surface rounded-2xl px-4 py-3 text-left text-sm" onClick={() => void send(s)}>{s}</button>)}</div>
+          <div className="mt-6 flex w-full flex-col gap-2">{STARTERS.map(s => <Button key={s} variant="outline" className="h-auto whitespace-normal px-4 py-3 text-left text-sm" onClick={() => void send(s)}>{s}</Button>)}</div>
         </div> : rows.map(m => {
           const meta = metaOf(m.meta); const proposal = safeProposal(meta['proposal']); const table = safeTable(meta['table']);
           const saved = transactions.data?.find(t => t.client_request_id === m.id); const mine = m.role === 'user';
           const cat = categories.data?.find(c => c.id === (saved?.category_id ?? proposal?.category_id));
-          return <div key={m.id} className={`flex animate-fade-up ${mine ? 'justify-end' : 'justify-start'}`}>
-            <div className={`max-w-[85%] rounded-3xl px-4 py-2.5 ${mine ? 'rounded-br-md bg-primary text-primary-foreground' : 'rounded-bl-md bg-card'}`}>
-              <div className="break-words text-[15px] leading-relaxed [&_p]:mb-1.5 [&_p:last-child]:mb-0 [&_strong]:font-semibold [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5"><ReactMarkdown skipHtml>{m.content}</ReactMarkdown></div>
+          return <Message key={m.id} from={mine ? "user" : "assistant"}>
+            <MessageContent className={mine ? "group-[.is-user]:bg-primary group-[.is-user]:text-primary-foreground" : "bg-transparent py-2"}>
+              <div className="break-words text-[15px] leading-relaxed [&_p]:mb-1.5 [&_p:last-child]:mb-0 [&_strong]:font-semibold [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5"><MessageResponse>{m.content}</MessageResponse></div>
               {table && <div className="mt-3 overflow-x-auto rounded-2xl border border-border"><p className="border-b border-border px-3 py-2 text-xs font-medium text-muted-foreground">{table.title}</p><table className="w-full text-sm"><thead><tr>{table.columns.map(c => <th key={c} className="px-3 py-1.5 text-left text-xs font-medium text-muted-foreground">{c}</th>)}</tr></thead><tbody>{table.rows.map((r, i) => <tr key={i} className="border-t border-border">{r.map((cell, j) => <td key={j} className={`px-3 py-1.5 ${j > 0 ? 'tabular-nums' : ''}`}>{cell}</td>)}</tr>)}</tbody></table></div>}
               {proposal && <div className="mt-3 overflow-hidden rounded-2xl border border-border bg-background/60">
                 <div className="h-1" style={{ background: categoryColor(cat) }} />
@@ -98,24 +104,28 @@ export function AssistantChat({ threadId, initial }: { threadId: string; initial
                     : <div className="mt-3 flex gap-2"><Button size="sm" className="flex-1 rounded-full" disabled={confirming === m.id} onClick={() => void quickConfirm(m.id, proposal)}><Check />{confirming === m.id ? 'Salvando…' : 'Confirmar'}</Button><Button size="sm" variant="outline" className="rounded-full" onClick={() => setEditing({ messageId: m.id, proposal })}><Pencil />Corrigir</Button></div>}
                 </div></div>}
               <p className={`mt-1 text-right text-[11px] ${mine ? 'text-primary-foreground/70' : 'text-muted-foreground'}`}>{time(m.created_at)}</p>
-            </div>
-          </div>;
+            </MessageContent>
+          </Message>;
         })}
-      {pendingText && !rows.some(m => m.role === 'user' && m.content === pendingText && last.current) && <div className="flex justify-end animate-fade-up"><div className="max-w-[85%] rounded-3xl rounded-br-md bg-primary px-4 py-2.5 text-[15px] text-primary-foreground">{pendingText}</div></div>}
-      {busy && <div className="flex justify-start" role="status" aria-label="Assistente pensando"><div className="flex gap-1 rounded-3xl rounded-bl-md bg-card px-4 py-3.5">{[0, 1, 2].map(i => <span key={i} className="size-2 animate-typing rounded-full bg-muted-foreground" style={{ animationDelay: `${i * 160}ms` }} />)}</div></div>}
-      {suggestions.length > 0 && <div className="mt-2 flex flex-wrap gap-2">{suggestions.map(s => <button key={s} className="pressable rounded-full border border-primary/40 px-3 py-1.5 text-left text-sm text-primary" onClick={() => void send(s)}>{s}</button>)}</div>}
+      {pendingText && !rows.some(m => m.id === last.current?.requestId) && <div className="flex justify-end animate-fade-up"><div className="max-w-[85%] rounded-3xl rounded-br-md bg-primary px-4 py-2.5 text-[15px] text-primary-foreground">{pendingText}</div></div>}
+      {busy && <Message from="assistant"><Shimmer>Patrion pensando…</Shimmer></Message>}
+      {suggestions.length > 0 && <div className="mt-2 flex flex-wrap gap-2">{suggestions.map(s => <Button key={s} variant="outline" className="h-auto whitespace-normal px-3 py-2 text-left text-sm text-primary" onClick={() => void send(s)}>{s}</Button>)}</div>}
       <div ref={end} />
-    </div>
+    </ConversationContent><ConversationScrollButton aria-label="Ir para a última mensagem" /></Conversation>
 
-    <form className="sticky bottom-20 -mx-4 border-t border-border bg-background/85 px-4 py-3 backdrop-blur-xl md:bottom-0" onSubmit={e => { e.preventDefault(); void send(); }}>
-      {(error || voice.error) && <p className="mb-2 flex items-center gap-2 text-sm text-destructive" role="alert">{error || voice.error}{error && text && <button type="button" className="inline-flex items-center gap-1 text-primary" onClick={() => void send()}><RotateCcw className="size-3.5" />Tentar de novo</button>}</p>}
-      {voice.listening && <p className="mb-2 text-sm text-primary" role="status">Ouvindo… toque para parar e revisar.</p>}
-      <div className="flex items-end gap-2 rounded-3xl border border-border bg-card p-1.5">
-        <Button type="button" size="icon" variant="ghost" className={`shrink-0 rounded-full ${voice.listening ? 'animate-mic-ring text-primary' : ''}`} aria-label={voice.listening ? 'Parar gravação' : 'Gravar mensagem'} disabled={busy} onClick={voice.start}>{voice.listening ? <Square /> : <Mic />}</Button>
-        <Textarea ref={input} rows={1} className="min-h-10 max-h-36 resize-none border-0 bg-transparent px-1 py-2 shadow-none focus-visible:ring-0" aria-label="Mensagem" placeholder="Mensagem" value={text} maxLength={2000} disabled={busy} onChange={e => setText(e.target.value)} onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey && window.matchMedia('(pointer: fine)').matches) { e.preventDefault(); void send(); } }} />
-        <Button size="icon" className="shrink-0 rounded-full" aria-label="Enviar mensagem" disabled={busy || voice.listening || !text.trim()}><ArrowUp /></Button>
-      </div>
-    </form>
+    <div className="shrink-0 border-t border-border bg-background pt-3">
+      {(error || voice.error) && <div className="mb-2 text-sm text-destructive" role="alert">{error || voice.error}{error && text && <Button type="button" variant="ghost" className="text-primary" onClick={() => void send()}><RotateCcw />Tentar novamente</Button>}</div>}
+      {voice.listening && <p className="mb-2 text-sm text-primary" role="status">Gravando… encerre para revisar.</p>}
+      <PromptInput onSubmit={() => send()}>
+        <PromptInputTextarea ref={input} className="min-h-12 max-h-36" aria-label="Mensagem" placeholder="Mensagem" value={text} maxLength={2000} onChange={e => setText(e.target.value)} onKeyDown={e => { if (e.key === 'Enter' && !window.matchMedia('(pointer: fine)').matches) e.stopPropagation(); }} />
+        <PromptInputFooter>
+          <Button type="button" size="icon" variant="ghost" aria-label={voice.listening ? 'Parar gravação' : 'Gravar mensagem'} disabled={busy} onClick={voice.start}>{voice.listening ? <Square /> : <Mic />}</Button>
+          <PromptInputSubmit aria-label="Enviar mensagem" status={busy ? 'submitted' : 'ready'} className="size-10" disabled={busy || voice.listening || !text.trim() || !messages.isSuccess}><ArrowUp /></PromptInputSubmit>
+        </PromptInputFooter>
+      </PromptInput>
+    </div>
+    </div></div>
+    <Dialog open={libraryOpen} onOpenChange={setLibraryOpen}><DialogContent className="max-h-[85dvh] overflow-y-auto"><DialogHeader><DialogTitle>Conversas anteriores</DialogTitle></DialogHeader><ConversationLibrary activeId={threadId} /></DialogContent></Dialog>
     {editing && <AssistantConfirmation {...editing} onClose={() => setEditing(undefined)} />}
   </AppShell>;
 }
