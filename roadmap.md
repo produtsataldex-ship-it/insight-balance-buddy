@@ -11,3 +11,4 @@
 - [ ] Usar espaçamento normal nas letras em todo o aplicativo.
 - [ ] Testar regras de acesso e os fluxos disponíveis.
 - [ ] Atualização 6: instalação PWA, convite e instruções, cache sem dados privados e verificação mobile/publicada.
+- [ ] Atualização solicitada: limpar painel financeiro duplicado do início; corrigir voz por toque; recuperar chat e histórico persistente; testar conta real e mobile.
