@@ -20,10 +20,13 @@ export const askAssistant = createServerFn({ method: 'POST' })
     ]);
     if (active.error || !active.data) throw new Error('Seu acesso está suspenso.');
     if (transactions.error || categories.error || history.error) { console.error('[assistant]', { correlationId: data.requestId, stage: 'load_data' }); return { error: 'Não foi possível consultar seus dados. Tente novamente.', kind: 'data' as const, correlationId: data.requestId }; }
-    if (history.data.some(m => m.id === data.replyId)) return { error: null };
+    const existingReply = await db.from('assistant_messages').select('id').eq('thread_id', data.threadId).eq('id', data.replyId).eq('role', 'assistant').maybeSingle();
+    if (existingReply.error) return { error: 'Não foi possível consultar a resposta.', kind: 'data' as const, correlationId: data.requestId };
+    if (existingReply.data) return { error: null };
     const userMessage = await db.from('assistant_messages').upsert({ id: data.requestId, user_id: context.userId, thread_id: data.threadId, role: 'user', content: data.text }, { onConflict: 'id', ignoreDuplicates: true });
     if (userMessage.error) return { error: 'Não foi possível salvar a mensagem.' };
-    await db.from('assistant_threads').update({ updated_at: new Date().toISOString(), ...(thread.data.title === 'Nova conversa' ? { title: data.text.slice(0, 60) } : {}) }).eq('id', data.threadId);
+    const updated = await db.from('assistant_threads').update({ updated_at: new Date().toISOString(), ...(thread.data.title === 'Nova conversa' ? { title: data.text.slice(0, 60) } : {}) }).eq('id', data.threadId);
+    if (updated.error) return { error: 'Não foi possível atualizar a conversa.', kind: 'data' as const, correlationId: data.requestId };
     const txs: TxLike[] = transactions.data.map(t => ({ ...t, type: t.type === 'income' ? 'income' : t.type === 'transfer' ? 'transfer' : 'expense', status: t.status === 'paid' ? 'paid' : 'pending' }));
     const period = monthPeriod(0, new Date(data.today + 'T12:00:00'));
     const { getRequest } = await import('@tanstack/react-start/server');
@@ -38,6 +41,8 @@ Registro: se houver pedido para registrar receita/despesa/transferência, propon
       const proposal = safeProposal(output.proposal);
       const saved = await db.from('assistant_messages').upsert({ id: data.replyId, user_id: context.userId, thread_id: data.threadId, role: 'assistant', content: output.reply, meta: { proposal, table: safeTable(output.table), suggestions: safeSuggestions(output.suggestions) } }, { onConflict: 'id', ignoreDuplicates: true });
       if (saved.error) { console.error('[assistant]', { correlationId: data.requestId, stage: 'save_reply', code: saved.error.code }); return { error: 'A resposta não foi salva. Tente novamente.', kind: 'data' as const, correlationId: data.requestId }; }
+      const completed = await db.from('assistant_threads').update({ updated_at: new Date().toISOString() }).eq('id', data.threadId);
+      if (completed.error) console.error('[assistant]', { correlationId: data.requestId, stage: 'update_activity', code: completed.error.code });
       console.info('[assistant]', { correlationId: data.requestId, stage: 'ok', ms: Date.now() - started });
       return { error: null };
     } catch (err) {
