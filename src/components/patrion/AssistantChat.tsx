@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Link, useNavigate } from '@tanstack/react-router';
+import { Link, useNavigate, useRouteContext } from '@tanstack/react-router';
 import { useServerFn } from '@tanstack/react-start';
 import { useQueryClient } from '@tanstack/react-query';
 import { ArrowUp, Check, History, Mic, Pencil, Plus, RotateCcw, Square } from 'lucide-react';
@@ -17,7 +17,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { askAssistant, confirmAssistantTransaction } from '@/lib/assistant.functions';
 import { safeProposal, safeSuggestions, safeTable, type TransactionProposal } from '@/lib/assistant-schema';
 import { useCategories, useTransactions } from '@/lib/data';
-import { useThreadMessages } from '@/lib/threads';
+import { useThreadMessages, threadKeys } from '@/lib/threads';
 import { useVoiceInput } from '@/hooks/use-voice-input';
 import { formatBRL } from '@/lib/format';
 import { todayISO } from '@/lib/finance';
@@ -30,6 +30,7 @@ const time = (iso: string) => new Date(iso).toLocaleTimeString('pt-BR', { hour: 
 function metaOf(meta: unknown) { return meta && typeof meta === 'object' && !Array.isArray(meta) ? meta as Record<string, unknown> : {}; }
 
 export function AssistantChat({ threadId, initial }: { threadId: string; initial?: string | undefined }) {
+  const { user } = useRouteContext({ from: '/_authenticated' });
   const messages = useThreadMessages(threadId); const transactions = useTransactions(); const categories = useCategories();
   const ask = useServerFn(askAssistant); const confirm = useServerFn(confirmAssistantTransaction); const qc = useQueryClient(); const navigate = useNavigate();
   const [libraryOpen, setLibraryOpen] = useState(false);
@@ -54,7 +55,7 @@ export function AssistantChat({ threadId, initial }: { threadId: string; initial
     const payload = last.current?.text === clean ? last.current : { text: clean, requestId: crypto.randomUUID(), replyId: crypto.randomUUID() }; last.current = payload;
     try {
       const result = await ask({ data: { ...payload, threadId, today: todayISO() } });
-      await Promise.all([qc.invalidateQueries({ queryKey: ['assistant-messages', threadId] }), qc.invalidateQueries({ queryKey: ['assistant-threads'] })]);
+      await Promise.all([qc.invalidateQueries({ queryKey: threadKeys.messages(user.id, threadId) }), qc.invalidateQueries({ queryKey: threadKeys.list(user.id) })]);
       if (result.error) { setError(result.error); setText(clean); } else last.current = null;
     } catch (e) {
       const kind = kindFromClientError(e, navigator.onLine);
@@ -80,11 +81,11 @@ export function AssistantChat({ threadId, initial }: { threadId: string; initial
       <PatrionLogo size={36} state={busy ? 'busy' : 'idle'} />
       <div className="min-w-0 flex-1"><p className="font-display text-lg leading-tight">PATRION</p><p className="text-xs text-muted-foreground" aria-live="polite">{busy ? 'pensando…' : 'assistente financeiro'}</p></div>
       <Button size="icon" variant="ghost" aria-label="Conversas anteriores" title="Conversas anteriores" onClick={() => setLibraryOpen(true)}><History /></Button>
-      <Button asChild size="icon" variant="ghost" aria-label="Nova conversa" title="Nova conversa"><Link to="/assistente"><Plus /></Link></Button>
+      <Button asChild size="icon" variant="ghost" aria-label="Nova conversa" title="Nova conversa"><Link to="/assistente" search={{ fresh: true }}><Plus /></Link></Button>
     </header>
 
     <Conversation className="min-h-0"><ConversationContent className="gap-4 px-0 py-3">
-      {messages.isPending ? <p className="text-sm text-muted-foreground">Carregando conversa…</p> : messages.error ? <div role="alert"><p className="text-destructive">Não foi possível carregar a conversa.</p><Button variant="outline" onClick={() => void messages.refetch()}>Tentar novamente</Button></div> :
+      {messages.isPending ? <div role="status" aria-label="Carregando conversa" className="space-y-5"><div className="h-16 w-3/4 animate-pulse rounded-2xl bg-muted" /><div className="ml-auto h-12 w-1/2 animate-pulse rounded-2xl bg-accent" /><p className="text-xs text-muted-foreground">Carregando conversa…</p></div> : messages.error ? <div role="alert"><p className="text-destructive">Não foi possível carregar a conversa.</p><Button variant="outline" onClick={() => void messages.refetch()}>Tentar novamente</Button></div> :
         !rows.length && !pendingText ? <div className="flex flex-1 flex-col items-center justify-center py-8 text-center animate-fade-up">
           <PatrionLogo size={64} state="intro" /><h2 className="mt-4 text-2xl">Nova conversa</h2><p className="mt-1 text-sm text-muted-foreground">Pergunte ou registre um gasto.</p>
           <div className="mt-6 flex w-full flex-col gap-2">{STARTERS.map(s => <Button key={s} variant="outline" className="h-auto whitespace-normal px-4 py-3 text-left text-sm" onClick={() => void send(s)}>{s}</Button>)}</div>
