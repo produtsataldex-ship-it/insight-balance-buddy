@@ -23,7 +23,7 @@ export function AppShell({ children, wide = false }: { children: ReactNode; wide
     if (!doc.startViewTransition || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     event.preventDefault();
     const current = TABS.findIndex(t => path.startsWith(t.to)); const next = TABS.findIndex(t => t.to === to);
-    document.documentElement.dataset.tabDirection = next >= current ? 'forward' : 'back';
+    document.documentElement.dataset['tabDirection'] = next >= current ? 'forward' : 'back';
     const transition = doc.startViewTransition(async () => {
       await navigate({ to });
       await new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
