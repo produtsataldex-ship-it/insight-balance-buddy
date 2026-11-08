@@ -1,6 +1,6 @@
-import { Link, useRouterState } from "@tanstack/react-router";
+import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
 import { Home, ArrowLeftRight, MessageCircle, UserRound, Shield } from "lucide-react";
-import type { ReactNode } from "react";
+import type { MouseEvent, ReactNode } from "react";
 import { PatrionLogo } from "./PatrionLogo";
 import { useIsAdmin } from "@/lib/data";
 import { cn } from "@/lib/utils";
@@ -13,9 +13,23 @@ const TABS = [
 ] as const;
 
 export function AppShell({ children, wide = false }: { children: ReactNode; wide?: boolean }) {
+  const navigate = useNavigate();
   const path = useRouterState({ select: (s) => s.location.pathname });
   const { data: isAdmin } = useIsAdmin();
 
+  function switchTab(event: MouseEvent<HTMLAnchorElement>, to: typeof TABS[number]['to']) {
+    if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0 || path.startsWith(to)) return;
+    const doc = document as Document & { startViewTransition?: (update: () => Promise<void>) => { finished: Promise<void> } };
+    if (!doc.startViewTransition || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    event.preventDefault();
+    const current = TABS.findIndex(t => path.startsWith(t.to)); const next = TABS.findIndex(t => t.to === to);
+    document.documentElement.dataset.tabDirection = next >= current ? 'forward' : 'back';
+    const transition = doc.startViewTransition(async () => {
+      await navigate({ to });
+      await new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
+    });
+    void transition.finished.catch(() => {});
+  }
   return (
     <div className="min-h-dvh bg-background md:pl-64">
       {/* Desktop sidebar */}
@@ -24,13 +38,15 @@ export function AppShell({ children, wide = false }: { children: ReactNode; wide
           <PatrionLogo size={36} />
           <span className="font-display text-xl text-gold-gradient">PATRION</span>
         </Link>
-        <nav className="flex flex-col gap-1">
+        <nav aria-label="Navegação principal" className="flex flex-col gap-1">
           {TABS.map((t) => {
             const active = path.startsWith(t.to);
             return (
               <Link
                 key={t.to}
                 to={t.to}
+                aria-current={active ? "page" : undefined}
+                 onClick={event => switchTab(event, t.to)}
                  preload="intent"
                 className={cn(
                   "pressable flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm",
@@ -57,7 +73,7 @@ export function AppShell({ children, wide = false }: { children: ReactNode; wide
       </aside>
 
       <main
-        className={cn("mx-auto w-full px-4 pt-[calc(var(--safe-top)+1.25rem)] pb-[calc(var(--safe-bottom)+6.5rem)] md:pb-12", wide ? "max-w-6xl" : "max-w-3xl")}
+        className={cn("patrion-main mx-auto w-full px-4 pt-[calc(var(--safe-top)+1.25rem)] pb-[calc(var(--safe-bottom)+6.5rem)] md:pb-12", wide ? "max-w-6xl" : "max-w-3xl")}
       >
         {children}
       </main>
@@ -74,6 +90,7 @@ export function AppShell({ children, wide = false }: { children: ReactNode; wide
               <Link
                 key={t.to}
                 to={t.to}
+                 onClick={event => switchTab(event, t.to)}
                  preload="intent"
                  aria-label={t.label}
                  title={t.label}
@@ -82,12 +99,12 @@ export function AppShell({ children, wide = false }: { children: ReactNode; wide
               >
                 <span
                   className={cn(
-                    "absolute top-0 h-0.5 rounded-full bg-primary",
+                    "absolute top-0 h-0.5 rounded-full bg-primary transition-all duration-[420ms]",
                     active ? "w-8 opacity-100" : "w-0 opacity-0",
                   )}
                 />
                 <t.icon
-                  className={cn("size-6", active ? "scale-110 text-primary" : "text-muted-foreground")}
+                  className={cn("size-6 transition-all duration-[420ms]", active ? "scale-110 text-primary" : "text-muted-foreground")}
                   strokeWidth={active ? 2.2 : 1.7}
                 />
               </Link>
