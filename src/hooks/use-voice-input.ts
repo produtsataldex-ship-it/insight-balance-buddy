@@ -28,7 +28,6 @@ export function useVoiceInput(onTranscript: (text: string) => void) {
     const Constructor = browser.SpeechRecognition ?? browser.webkitSpeechRecognition;
     if (!Constructor) { setError('A voz não está disponível neste navegador. Digite seu gasto abaixo.'); return; }
     setError('');
-    recognition.current?.abort();
     const session = new Constructor();
     let received = false;
     let finalText = '';
