@@ -12,3 +12,5 @@
 - [ ] Testar regras de acesso e os fluxos disponíveis.
 - [ ] Atualização 6: instalação PWA, convite e instruções, cache sem dados privados e verificação mobile/publicada.
 - [ ] Atualização solicitada: limpar painel financeiro duplicado do início; corrigir voz por toque; recuperar chat e histórico persistente; testar conta real e mobile.
+- [ ] Atualização avançada: redesenhar início completo, reintegrar donut real por período, transições de conteúdo 420ms, abrir conversa diretamente e otimizar cache isolado do histórico.
+- [ ] Validar a atualização avançada com testes e telas mobile/desktop; verificação autenticada aguarda conta autorizada.
